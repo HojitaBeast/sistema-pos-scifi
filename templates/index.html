@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="app-title-head">Punto de Venta POS - Industrial Sci-Fi</title>
+    <style>
+        :root {
+            --bg-color: #e5e7eb;
+            --panel-bg: #f3f4f6;
+            --panel-inner: #ffffff;
+            --accent-black: #111827;
+            --accent-gray: #9ca3af;
+            --accent-light-gray: #d1d5db;
+            --text-color: #1f2937;
+            --text-muted: #6b7280;
+            --danger-red: #dc2626;
+            --edit-amber: #d97706;
+            --green-success: #059669;
+            --scan-blue: #2563eb;
+            --app-font: 'Consolas', 'Courier New', monospace, sans-serif;
+        }
+
+        body.dark-theme {
+            --bg-color: #111827;
+            --panel-bg: #1f2937;
+            --panel-inner: #111827;
+            --accent-black: #f3f4f6;
+            --accent-gray: #4b5563;
+            --accent-light-gray: #374151;
+            --text-color: #f9fafb;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--app-font);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1280px;
+            background: var(--panel-bg);
+            border: 3px solid var(--accent-black);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        header {
+            background: var(--accent-black);
+            color: var(--panel-inner);
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--accent-gray);
+            position: relative;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+
+        header h1::before {
+            content: "[00] ";
+            color: var(--accent-gray);
+        }
+
+        nav {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-config {
+            background: #374151;
+            color: #ffffff;
+            border: 2px solid var(--accent-gray);
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .nav-btn {
+            background: #1f2937;
+            color: #ffffff;
+            border: 2px solid var(--accent-gray);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: #ffffff;
+            color: #111827;
+            border-color: #111827;
+        }
+
+        .btn-salir {
+            background: var(--danger-red) !important;
+            border-color: #991b1b !important;
+            color: #ffffff !important;
+        }
+
+        .slider-wrapper {
+            position: relative;
+            width: 100%;
+            min-height: 620px;
+            overflow: hidden;
+        }
+
+        .tab-content {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            padding: 25px;
+            padding-bottom: 55px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(20px);
+            transition: transform 0.15s ease-out, opacity 0.15s ease-out, visibility 0.15s;
+        }
+
+        .tab-content.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        footer {
+            background: var(--accent-black);
+            color: var(--accent-gray);
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-top: 2px solid var(--accent-gray);
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+
+        .panel-box {
+            background: var(--panel-inner);
+            border: 2px solid var(--accent-black);
+            border-left: 6px solid var(--accent-black);
+            padding: 20px;
+            position: relative;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+        }
+
+        .panel-form-scroll {
+            max-height: 520px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .panel-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--accent-black);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        .panel-box h3 {
+            color: var(--text-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .grid-dos-columnas {
+            display: grid;
+            grid-template-columns: 42% 56%;
+            gap: 2%;
+            align-items: start;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-top: 4px;
+            margin-bottom: 12px;
+            background: var(--panel-bg);
+            border: 2px solid var(--accent-light-gray);
+            color: var(--text-color);
+            outline: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .btn-action {
+            background: var(--accent-black);
+            color: var(--panel-inner);
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 2px solid var(--accent-black);
+            padding: 12px;
+            width: 100%;
+            letter-spacing: 1px;
+            transition: 0.2s;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+
+        .btn-scan {
+            background: var(--scan-blue);
+            color: #ffffff;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 2px solid #1d4ed8;
+            padding: 10px;
+            width: 100%;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: bold;
+            border: 1px solid var(--accent-black);
+        }
+
+        .btn-delete { background: var(--danger-red); color: #ffffff; }
+        .btn-edit { background: var(--edit-amber); color: #ffffff; }
+        .btn-print { background: var(--scan-blue); color: #ffffff; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--accent-light-gray);
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: var(--accent-light-gray);
+            color: var(--text-color);
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--accent-black);
+            font-weight: 800;
+        }
+
+        .col-acciones { display: none; }
+        .modo-edicion .col-acciones { display: table-cell; }
+
+        tr.venta-anulada {
+            background-color: #fee2e2 !important;
+            color: #991b1b !important;
+            font-weight: bold;
+        }
+        tr.venta-anulada td {
+            border-bottom-color: #fca5a5 !important;
+        }
+
+        .total-display {
+            font-size: 2rem;
+            color: var(--green-success);
+            text-align: right;
+            margin-top: 15px;
+            font-weight: 900;
+            background: var(--panel-bg);
+            padding: 12px;
+            border: 2px solid var(--accent-black);
+        }
+
+        .table-container {
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .personajes-box {
+            margin-top: 15px;
+            padding: 10px;
+            background: var(--panel-bg);
+            border: 2px dashed var(--accent-black);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .personajes-box img {
+            max-width: 110px;
+            height: auto;
+        }
+
+        .toast-emergente {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--panel-inner);
+            color: var(--text-color);
+            border: 3px solid var(--accent-black);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            z-index: 4000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .toast-emergente.activo {
+            top: 25px;
+            opacity: 1;
+        }
+
+        .toast-emergente img {
+            max-width: 55px;
+            height: auto;
+        }
+
+        .toast-texto {
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.activo { display: flex; }
+
+        #modal-confirmar {
+            z-index: 3000 !important;
+        }
+
+        .boleta-card {
+            background: #ffffff;
+            color: #111827;
+            border: 4px solid var(--accent-black);
+            width: 380px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .modal-card-custom {
+            background: var(--panel-inner);
+            color: var(--text-color);
+            border: 4px solid var(--accent-black);
+            width: 520px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .modal-flex-personajes {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .modal-flex-personajes img {
+            max-width: 90px;
+            height: auto;
+        }
+
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .qty-input {
+            width: 45px !important;
+            text-align: center;
+            padding: 4px !important;
+            margin: 0 !important;
+        }
+
+        .btn-easter {
+            background: var(--panel-bg);
+            border: 2px solid var(--accent-gray);
+            color: var(--text-color);
+            padding: 6px 10px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 2px;
+            transition: 0.2s;
+        }
+
+        .btn-easter:hover {
+            background: var(--accent-black);
+            color: #ffffff;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #boleta-imprimible, #boleta-imprimible * { visibility: visible; }
+            #boleta-imprimible {
+                position: absolute;
+                left: 0; top: 0;
+                width: 80mm;
+                padding: 5mm;
+                border: none;
+                font-size: 10pt;
+            }
+            .modal-actions { display: none !important; }
+        }
+        /* --- ESTILO PARA MENÚ DESPLEGABLE OSCURO Y SCROLL --- */
+#select-productos {
+    background-color: #151922 !important;
+    color: #ffffff !important;
+    border: 1px solid #111827;
+}
+
+#select-productos option {
+    background-color: #151922 !important;
+    color: #ffffff !important;
+}
+
+#select-productos optgroup {
+    background-color: #0d1117 !important;
+    color: #60a5fa !important;
+    font-weight: bold;
+}
+
+.carrito-scroll {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #111827;
+}
+    </style>
+    <style>
+  /* Aplica tu cursor a toda la interfaz */
+  body, button, input, select, a {
+    cursor: url('/static/cursor.cur'), auto; /* Usa la ruta /static/ donde guardaste el archivo */
+  }
+
+  /* ESTILOS PANTALLA DE CARGA (SPLASH SCREEN) */
+  #splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #0d0f17;
+    z-index: 99999; /* Para que quede por encima de toda la app */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease;
+  }
+
+  .splash-container {
+    width: 400px;
+    padding: 30px;
+    background: rgba(20, 24, 38, 0.95);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.2);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .character-main {
+    width: 160px;
+    height: auto;
+    filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.5));
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .system-title {
+    color: #e0f7fc;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    margin: 15px 0 25px 0;
+    text-transform: uppercase;
+  }
+
+  .progress-bar-container {
+    position: relative;
+    width: 100%;
+    height: 12px;
+    background-color: #1a2233;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    overflow: visible;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0072ff, #00e5ff);
+    border-radius: 10px;
+    position: relative;
+    transition: width 0.1s linear;
+  }
+
+  .progress-head-icon {
+    position: absolute;
+    right: -20px;
+    top: -32px;
+    width: 42px;
+    height: auto;
+    animation: bounce 0.4s ease-in-out infinite alternate;
+  }
+
+  @keyframes bounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-4px); }
+  }
+
+  .loading-text {
+    margin-top: 15px;
+    color: #8a99ad;
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body onclick="cerrarToastOnGlobalClick()">
+
+    <!-- PANTALLA DE CARGA (SPLASH SCREEN) -->
+<div id="splash-screen">
+  <div class="splash-container">
+    <img src="/static/hojita.png" alt="Personaje Principal" class="character-main">
+    <div class="system-title">Cargando Punto de Venta...</div>
+    <div class="progress-bar-container">
+      <div class="progress-fill" id="progressFill">
+        <img src="/static/carga.png" alt="Icono Carga" class="progress-head-icon">
+      </div>
+    </div>
+    <div class="loading-text" id="loadingText">Iniciando módulos... 0%</div>
+  </div>
+</div>
+
+<!-- TOAST SCI-FI -->
+<div class="toast-emergente" id="toast-notif" onclick="ocultarToast()">
+    <img src="/static/pibla.png" alt="Pibla" onerror="this.style.display='none'">
+    <div class="toast-texto" id="toast-mensaje">PRODUCTO AÑADIDO CORRECTAMENTE</div>
+    <img src="/static/pible.png" alt="Pible" onerror="this.style.display='none'">
+</div>
+
+<div class="app-container">
+    <header>
+        <h1 id="app-title-display">Punto de Venta POS</h1>
+        <nav>
+            <button class="btn-config" title="Configuración" onclick="abrirModalConfig()">⚙️</button>
+            <button class="nav-btn active" onclick="cambiarTab('ventas', this)">Ventas</button>
+            <button class="nav-btn" onclick="cambiarTab('inventario', this)">Inventario</button>
+            <button class="nav-btn" onclick="cambiarTab('historial', this)">Historial</button>
+            <button class="nav-btn btn-salir" onclick="abrirModalSalir()">Guardar y Salir</button>
+        </nav>
+    </header>
+
+    <div class="slider-wrapper">
+        <!-- Pestaña Ventas -->
+        <div id="tab-ventas" class="tab-content active">
+            <div class="grid-dos-columnas">
+                <div>
+                    <div class="panel-box" style="margin-bottom: 15px;">
+                        <div class="panel-header-flex">
+                            <h3>Seleccionar Producto</h3>
+                        </div>
+                        <label>Elegir de la Lista (Sin Escáner):</label>
+                        <div class="form-row">
+                            <select id="select-producto">
+                                <option value="">-- Cargar Lista de Productos --</option>
+                            </select>
+                            <input type="number" id="cant-producto" value="1" min="1" style="width: 90px;" placeholder="Cant">
+                            <button class="btn-action" style="width: 130px;" onclick="agregarDesdeSelect()">+ Agregar</button>
+                        </div>
+
+                        <label style="margin-top: 10px; display:block;">O Escanear / Digitar Código o Nombre:</label>
+                        <div class="form-row">
+                            <input type="text" id="buscar-prod" placeholder="Presione Enter para buscar..." onkeypress="if(event.key==='Enter') buscarProducto()">
+                            <button class="btn-scan" style="width:auto; white-space:nowrap; margin:0;" id="btn-escanear-venta" onclick="toggleEscaneoVentas()">📷 ESCANEAR</button>
+                        </div>
+                    </div>
+
+                    <div class="panel-box">
+                        <div class="panel-header-flex">
+                            <h3>Carrito de Compra</h3>
+                        </div>
+                        <div class="carrito-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th style="width: 110px;">Cant</th>
+                                        <th>Precio</th>
+                                        <th>Subtotal</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="carrito-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="panel-box">
+                        <div class="panel-header-flex">
+                            <h3>Cobro</h3>
+                        </div>
+                        <label>Método de Pago:</label>
+                        <select id="metodo-pago">
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Transferencia">Transferencia</option>
+                        </select>
+
+                        <div class="total-display">
+                            TOTAL: S/ <span id="total-monto">0.00</span>
+                        </div>
+
+                        <button class="btn-action" style="margin-top: 20px;" onclick="registrarVenta()">Procesar Venta</button>
+
+                        <div class="personajes-box">
+                            <img src="/static/pible.png" alt="Pible" onerror="this.style.display='none'">
+                            <img src="/static/pibla.png" alt="Pibla" onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña Inventario -->
+        <div id="tab-inventario" class="tab-content">
+            <div class="grid-dos-columnas">
+                <div class="panel-box panel-form-scroll">
+                    <div class="panel-header-flex">
+                        <h3 id="form-titulo">REGISTRAR / EDITAR PRODUCTO</h3>
+                    </div>
+                    <input type="hidden" id="prod-id">
+                    
+                    <button class="btn-scan" id="btn-escanear-prod" onclick="toggleEscaneoInventario()">📷 ESCANEAR CÓDIGO DE BARRAS</button>
+
+                    <label>Código de Barras (Opcional - Panes/Artesanal):</label>
+                    <input type="text" id="prod-codigo" placeholder="Dejar vacío para autogenerar">
+                    
+                    <label>Nombre del Producto:</label>
+                    <input type="text" id="prod-nombre" placeholder="Ej: Pan Manteca / Primor 1L">
+                    
+                    <label>Categoría:</label>
+                    <select id="prod-categoria">
+                        <option value="Abarrotes">Abarrotes</option>
+                        <option value="Panadería/Pastelería">Panadería/Pastelería</option>
+                        <option value="Bebidas">Bebidas</option>
+                        <option value="Limpieza">Limpieza</option>
+                        <option value="Aseo Personal">Aseo Personal</option>
+                        <option value="Frutas/Verduras">Frutas/Verduras</option>
+                        <option value="Enlatados/Envasados">Enlatados/Envasados</option>
+                    </select>
+
+                    <label>Marca (Opcional):</label>
+                    <input type="text" id="prod-marca" placeholder="Ej: Primor, Gloria, etc.">
+                    
+                    <label>Precio (S/):</label>
+                    <input type="number" step="0.10" id="prod-precio" placeholder="Ej: 0.50">
+                    
+                    <label>Stock Inicial:</label>
+                    <input type="number" id="prod-stock" placeholder="Cantidad de Existencias">
+                    
+                    <button class="btn-action" style="margin-top: 15px;" onclick="guardarProducto()">GUARDAR PRODUCTO</button>
+                    <button class="btn-action" id="btn-cancelar" style="background:#6b7280; border-color:#6b7280; display:none; margin-top:8px;" onclick="limpiarFormulario()">CANCELAR EDICIÓN</button>
+                </div>
+
+                <div class="panel-box" id="panel-inventario-tabla">
+                    <div class="panel-header-flex">
+                        <h3>INVENTARIO ACTUAL</h3>
+                        <button class="btn-toggle-modo" id="btn-toggle-acciones" onclick="toggleModoEdicion()" style="padding:6px 12px; font-weight:bold; cursor:pointer;">⚙️ Habilitar Opciones</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="tabla-inventario">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre / Marca</th>
+                                    <th>Cat.</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th class="col-acciones">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventario-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña Historial -->
+        <div id="tab-historial" class="tab-content">
+            <div class="panel-box">
+                <div class="panel-header-flex">
+                    <h3>Historial de Ventas del Día</h3>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-easter" title="Easter Egg" onclick="pedirClaveEasterEgg()">🧹</button>
+                        <button class="btn-toggle-modo" id="btn-toggle-historial" onclick="toggleModoHistorial()" style="padding:6px 12px; font-weight:bold; cursor:pointer;">⚙️ Opciones de Edición</button>
+                    </div>
+                </div>
+                <div class="table-container" style="max-height: 440px; overflow-y: auto;">
+                    <table id="tabla-historial">
+                        <thead>
+                            <tr>
+                                <th># Venta</th>
+                                <th>Fecha / Hora</th>
+                                <th>Productos</th>
+                                <th>Cantidades</th>
+                                <th>Método</th>
+                                <th>Total</th>
+                                <th>Boleta</th>
+                                <th class="col-acciones">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historial-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-left">.git</div>
+        <div class="footer-right">HojitaBeast</div>
+    </footer>
+</div>
+
+<!-- MODAL BOLETA -->
+<div class="modal-overlay" id="modal-boleta">
+    <div class="boleta-card" id="boleta-imprimible">
+        <div style="text-align: center; border-bottom: 2px dashed #111; padding-bottom: 10px; margin-bottom: 10px;">
+            <h2 style="font-size: 1.1rem; font-weight: 900;">COMERCIAL HOJITA</h2>
+            <p style="font-size: 0.75rem;">BOLETA DE VENTA ELECTRÓNICA</p>
+            <p style="font-size: 0.8rem; font-weight: bold; margin-top: 5px;" id="b-numero">N° VENTA: #00</p>
+            <p style="font-size: 0.75rem;" id="b-fecha">FECHA: 2026-09-28 00:00:00</p>
+        </div>
+        <div style="font-size: 0.85rem; margin-bottom: 15px;">
+            <p style="margin-bottom: 5px;"><strong>PAGO:</strong> <span id="b-metodo">Efectivo</span></p>
+            <table>
+                <thead>
+                    <tr style="border-bottom: 1px solid #000;">
+                        <th style="text-align: left;">CANT</th>
+                        <th style="text-align: left;">DESCRIPCIÓN</th>
+                        <th style="text-align: right;">P.U.</th>
+                        <th style="text-align: right;">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="b-items"></tbody>
+            </table>
+            <div style="text-align: right; font-size: 1.1rem; font-weight: 900; margin-top: 15px; border-top: 1px solid #000; padding-top: 5px;">
+                TOTAL: S/ <span id="b-total">0.00</span>
+            </div>
+        </div>
+        <div style="border-top: 2px dashed #111; padding-top: 10px; text-align: center;">
+            <p style="font-size: 0.75rem;">¡GRACIAS POR SU COMPRA!</p>
+            <div class="modal-actions" style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-action btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
+                <button class="btn-action btn-delete" onclick="cerrarBoleta()">✖️ CERRAR</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMAR ACCIÓN -->
+<div class="modal-overlay" id="modal-confirmar">
+    <div class="modal-card-custom">
+        <h3 id="modal-confirmar-titulo">CONFIRMAR ACCIÓN</h3>
+        <div class="modal-flex-personajes">
+            <img src="/static/pible.png" alt="Pible" onerror="this.style.display='none'">
+            <div style="font-weight: bold; font-size: 1rem; line-height: 1.4;" id="modal-confirmar-mensaje">
+                ¿ESTÁS SEGURO?
+            </div>
+            <img src="/static/pibla.png" alt="Pibla" onerror="this.style.display='none'">
+        </div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="btn-action btn-delete" id="btn-modal-ejecutar">SÍ, CONTINUAR</button>
+            <button class="btn-action" style="background:#6b7280; border-color:#6b7280;" onclick="cerrarModalConfirmar()">CANCELAR</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONTRASEÑA EASTER EGG -->
+<div class="modal-overlay" id="modal-easter">
+    <div class="modal-card-custom" style="width: 400px;">
+        <h3>LIMPIAR HISTORIAL</h3>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:8px;">Ingrese la contraseña del sistema para limpiar la vista:</p>
+        <div class="modal-flex-personajes" style="margin: 10px 0;">
+            <img src="/static/pible.png" alt="Pible" onerror="this.style.display='none'">
+            <input type="password" id="input-easter-pass" placeholder="••••" style="text-align:center; font-size:1.2rem; letter-spacing:4px;">
+            <img src="/static/pibla.png" alt="Pibla" onerror="this.style.display='none'">
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn-action btn-delete" onclick="validarEasterEgg()">LIMPIAR VISTA</button>
+            <button class="btn-action" style="background:#6b7280; border-color:#6b7280;" onclick="cerrarModalEaster()">CANCELAR</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SALIR -->
+<div class="modal-overlay" id="modal-salir">
+    <div class="modal-card-custom">
+        <h3>CONFIRMAR CIERRE DE SISTEMA</h3>
+        <div class="modal-flex-personajes">
+            <img src="/static/pible.png" alt="Pible" onerror="this.style.display='none'">
+            <div style="font-weight: bold; font-size: 0.95rem; line-height: 1.4;">
+                ¿Desea guardar el reporte del día cerrar la aplicación?
+            </div>
+            <img src="/static/pibla.png" alt="Pibla" onerror="this.style.display='none'">
+        </div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="btn-action" style="background:#059669; border-color:#059669;" onclick="confirmarGuardarYSalir()">💾 GUARDAR Y SALIR</button>
+            <button class="btn-action btn-delete" onclick="cerrarModalSalir()">CANCELAR</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIGURACIÓN -->
+<div class="modal-overlay" id="modal-config">
+    <div class="modal-card-custom" style="width: 440px; text-align: left;">
+        <h3 style="text-align: center; margin-bottom: 15px;">⚙️ OPCIONES</h3>
+        
+        <label>Nombre del Programa:</label>
+        <input type="text" id="cfg-nombre" value="Punto de Venta ">
+
+        <label>Tipo de Fuente:</label>
+        <select id="cfg-fuente">
+            <option value="'Consolas', 'Courier New', monospace, sans-serif">Consolas / Monospace (Sci-Fi)</option>
+            <option value="Arial, sans-serif">Arial Standard</option>
+            <option value="'Comic Sans MS', 'Comic Sans', cursive">Comic Sans</option>
+        </select>
+
+        <label>Tema del Programa:</label>
+        <select id="cfg-tema">
+            <option value="white">Tema Claro (White)</option>
+            <option value="dark">Tema Oscuro (Dark Sci-Fi)</option>
+        </select>
+
+        <label>Easter Egg):</label>
+        <input type="password" id="cfg-password" placeholder="Nueva Contraseña">
+
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="btn-action" onclick="confirmarGuardarConfiguracion()">GUARDAR CAMBIOS</button>
+            <button class="btn-action btn-delete" onclick="cerrarModalConfig()">CERRAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let carrito = [];
+    let productosCargados = [];
+    let modoEdicionActivo = false;
+    let modoHistorialActivo = false;
+    let toastTimer = null;
+    let accionPendiente = null;
+
+    // Liberar estado de escaneo cuando el programa no está activo en pantalla
+    document.addEventListener("visibilitychange", function() {
+        if (document.hidden) {
+            cancelarTodoEscaneo();
+            if(toastTimer) clearTimeout(toastTimer);
+        }
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            cancelarTodoEscaneo();
+            cerrarBoleta();
+            cerrarModalSalir();
+            cerrarModalConfig();
+            cerrarModalConfirmar();
+            cerrarModalEaster();
+            ocultarToast();
+        }
+    });
+
+    function mostrarToast(mensaje) {
+        const toast = document.getElementById('toast-notif');
+        document.getElementById('toast-mensaje').innerText = mensaje;
+        toast.classList.add('activo');
+
+        if(toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            ocultarToast();
+        }, 1500);
+    }
+
+    function ocultarToast() {
+        const toast = document.getElementById('toast-notif');
+        if(toast) toast.classList.remove('activo');
+    }
+
+    function cerrarToastOnGlobalClick() {
+        const toast = document.getElementById('toast-notif');
+        if(toast && toast.classList.contains('activo')) {
+            ocultarToast();
+        }
+    }
+
+    function solicitarConfirmacion(titulo, mensaje, fnEjecutar) {
+        document.getElementById('modal-confirmar-titulo').innerText = titulo;
+        document.getElementById('modal-confirmar-mensaje').innerText = mensaje;
+        
+        accionPendiente = fnEjecutar;
+        document.getElementById('btn-modal-ejecutar').onclick = async function() {
+            if(accionPendiente) await accionPendiente();
+            cerrarModalConfirmar();
+        };
+
+        document.getElementById('modal-confirmar').classList.add('activo');
+    }
+
+    function cerrarModalConfirmar() {
+        document.getElementById('modal-confirmar').classList.remove('activo');
+        accionPendiente = null;
+    }
+
+    function cancelarTodoEscaneo() {
+        const btnVenta = document.getElementById('btn-escanear-venta');
+        if (btnVenta) {
+            btnVenta.classList.remove('escanear-activo');
+            btnVenta.innerText = "📷 ESCANEAR";
+        }
+        const btnProd = document.getElementById('btn-escanear-prod');
+        if (btnProd) {
+            btnProd.classList.remove('escanear-activo');
+            btnProd.innerText = "📷 ESCANEAR CÓDIGO DE BARRAS";
+        }
+    }
+
+    function cambiarTab(tabName, btn) {
+        const targetTab = document.getElementById('tab-' + tabName);
+        const currentTab = document.querySelector('.tab-content.active');
+        if (currentTab === targetTab) return;
+
+        cancelarTodoEscaneo();
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        targetTab.classList.add('active');
+
+        if(tabName === 'ventas') cargarSelectProductos();
+        if(tabName === 'inventario') cargarInventario();
+        if(tabName === 'historial') cargarHistorial();
+    }
+
+    function toggleModoEdicion() {
+        modoEdicionActivo = !modoEdicionActivo;
+        const tabla = document.getElementById('tabla-inventario');
+        const btn = document.getElementById('btn-toggle-acciones');
+        if (modoEdicionActivo) {
+            tabla.classList.add('modo-edicion');
+            btn.innerText = "✖️️ Ocultar Opciones";
+        } else {
+            tabla.classList.remove('modo-edicion');
+            btn.innerText = "⚙️ Habilitar Opciones";
+        }
+    }
+
+    function toggleModoHistorial() {
+        modoHistorialActivo = !modoHistorialActivo;
+        const tabla = document.getElementById('tabla-historial');
+        const btn = document.getElementById('btn-toggle-historial');
+        if (modoHistorialActivo) {
+            tabla.classList.add('modo-edicion');
+            btn.innerText = "✖️ Ocultar Opciones";
+        } else {
+            tabla.classList.remove('modo-edicion');
+            btn.innerText = "⚙️ Opciones de Edición";
+        }
+    }
+
+    function toggleEscaneoVentas() {
+        const inputBuscar = document.getElementById('buscar-prod');
+        const btnScan = document.getElementById('btn-escanear-venta');
+        if (btnScan.classList.contains('escanear-activo')) {
+            btnScan.classList.remove('escanear-activo');
+            btnScan.innerText = "📷 ESCANEAR";
+        } else {
+            inputBuscar.value = '';
+            inputBuscar.focus();
+            btnScan.classList.add('escanear-activo');
+            btnScan.innerText = "⚡ ESPERANDO...";
+        }
+    }
+
+    async function cargarSelectProductos() {
+        const res = await fetch('/api/productos');
+        const data = await res.json();
+        if (data.success) {
+            productosCargados = data.productos;
+            const select = document.getElementById('select-producto');
+            select.innerHTML = '<option value="">-- Seleccionar de la Lista --</option>';
+
+            // Agrupar productos por categoría
+            const categorias = {};
+            productosCargados.forEach(p => {
+                const cat = p.categoria || 'SIN CATEGORÍA';
+                if (!categorias[cat]) {
+                    categorias[cat] = [];
+                }
+                categorias[cat].push(p);
+            });
+
+            // Generar las opciones dentro de cada optgroup
+            for (const [cat, prods] of Object.entries(categorias)) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = cat.toUpperCase();
+
+                prods.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    
+                    const marcaStr = p.marca ? ` (${p.marca})` : '';
+                    const precioStr = p.precio !== undefined ? ` - S/ ${parseFloat(p.precio).toFixed(2)}` : '';
+                    const stockStr = p.stock !== undefined ? ` (Stock: ${p.stock})` : '';
+                    
+                    option.textContent = `${p.nombre}${marcaStr}${precioStr}${stockStr}`;
+
+                    if (p.stock <= 0) {
+                        option.disabled = true;
+                    }
+
+                    optgroup.appendChild(option);
+                });
+
+                select.appendChild(optgroup);
+            }
+        }
+    }   
+
+    function agregarDesdeSelect() {
+        const id = document.getElementById('select-producto').value;
+        const cant = parseInt(document.getElementById('cant-producto').value) || 1;
+        if(!id) return mostrarToast("INGRESE UN PRODUCTO");
+
+        const p = productosCargados.find(item => item.id == id);
+        if(p) agregarAlCarrito(p, cant);
+    }
+
+    async function buscarProducto() {
+        const crit = document.getElementById('buscar-prod').value.trim();
+        cancelarTodoEscaneo();
+        if(!crit) return mostrarToast("INGRESE UN PRODUCTO");
+
+        const res = await fetch(`/api/producto/${encodeURIComponent(crit)}`);
+        const data = await res.json();
+        if(data.success) {
+            agregarAlCarrito(data.producto, 1);
+            document.getElementById('buscar-prod').value = '';
+        } else {
+            mostrarToast("PRODUCTO NO ENCONTRADO");
+        }
+    }
+
+    function agregarAlCarrito(prod, cantidad) {
+        if(prod.stock <= 0) {
+            return mostrarToast(`'${prod.nombre}' ESTÁ AGOTADO`);
+        }
+
+        const existe = carrito.find(item => item.id === prod.id);
+        const cantActual = existe ? existe.cantidad : 0;
+        const totalNueva = cantActual + cantidad;
+
+        if(totalNueva > prod.stock) {
+            return mostrarToast(`STOCK INSUFICIENTE (${prod.stock} DISP.)`);
+        }
+
+        if(existe) {
+            existe.cantidad = totalNueva;
+        } else {
+            carrito.push({ id: prod.id, nombre: prod.nombre, precio: prod.precio, stockMax: prod.stock, cantidad: cantidad });
+        }
+        renderCarrito();
+        mostrarToast("PRODUCTO AÑADIDO AL CARRITO");
+    }
+
+    function cambiarCantidadCarrito(index, nuevaCant) {
+        nuevaCant = parseInt(nuevaCant);
+        const item = carrito[index];
+        if(!item) return;
+
+        if(isNaN(nuevaCant) || nuevaCant <= 0) {
+            carrito.splice(index, 1);
+        } else if(nuevaCant > item.stockMax) {
+            mostrarToast(`STOCK MÁXIMO ALCANZADO (${item.stockMax})`);
+            item.cantidad = item.stockMax;
+        } else {
+            item.cantidad = nuevaCant;
+        }
+        renderCarrito();
+    }
+
+    function renderCarrito() {
+        const body = document.getElementById('carrito-body');
+        body.innerHTML = '';
+        let total = 0;
+        carrito.forEach((i, idx) => {
+            const sub = i.precio * i.cantidad;
+            total += sub;
+            body.innerHTML += `<tr>
+                <td>${i.nombre}</td>
+                <td>
+                    <div class="qty-controls">
+                        <button class="btn-small" onclick="cambiarCantidadCarrito(${idx}, ${i.cantidad - 1})">-</button>
+                        <input type="number" class="qty-input" value="${i.cantidad}" min="1" max="${i.stockMax}" onchange="cambiarCantidadCarrito(${idx}, this.value)">
+                        <button class="btn-small" onclick="cambiarCantidadCarrito(${idx}, ${i.cantidad + 1})">+</button>
+                    </div>
+                </td>
+                <td>S/ ${i.precio.toFixed(2)}</td>
+                <td>S/ ${sub.toFixed(2)}</td>
+                <td><button class="btn-small btn-delete" onclick="cambiarCantidadCarrito(${idx}, 0)">🗑️</button></td>
+            </tr>`;
+        });
+        document.getElementById('total-monto').innerText = total.toFixed(2);
+    }
+
+    async function registrarVenta() {
+        if(carrito.length === 0) return mostrarToast("INGRESE UN PRODUCTO");
+        const total = parseFloat(document.getElementById('total-monto').innerText);
+        const metodo = document.getElementById('metodo-pago').value;
+
+        const res = await fetch('/api/venta', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ metodo_pago: metodo, items: carrito, total: total })
+        });
+        const data = await res.json();
+        if(data.success) {
+            mostrarBoleta(data.venta_id, data.fecha_hora, metodo, carrito, total);
+            carrito = [];
+            renderCarrito();
+            cargarSelectProductos();
+        } else {
+            mostrarToast(data.message || "ERROR EN LA VENTA");
+        }
+    }
+
+    function mostrarBoleta(id, fecha, metodo, items, total) {
+        document.getElementById('b-numero').innerText = `N° VENTA: #${id}`;
+        document.getElementById('b-fecha').innerText = `FECHA: ${fecha}`;
+        document.getElementById('b-metodo').innerText = metodo;
+        document.getElementById('b-total').innerText = parseFloat(total).toFixed(2);
+
+        const tbody = document.getElementById('b-items');
+        tbody.innerHTML = '';
+        items.forEach(i => {
+            const precio = parseFloat(i.precio || i.precio_unitario || 0);
+            const cant = parseInt(i.cantidad || 1);
+            const sub = precio * cant;
+            tbody.innerHTML += `<tr>
+                <td>${cant}</td>
+                <td>${i.nombre}</td>
+                <td style="text-align: right;">${precio.toFixed(2)}</td>
+                <td style="text-align: right;">${sub.toFixed(2)}</td>
+            </tr>`;
+        });
+
+        document.getElementById('modal-boleta').classList.add('activo');
+    }
+
+    async function reimprimirBoleta(ventaId) {
+        const res = await fetch(`/api/venta/${ventaId}`);
+        const data = await res.json();
+        if(data.success) {
+            mostrarBoleta(data.venta.id, data.venta.fecha_hora, data.venta.metodo_pago, data.items, data.venta.total);
+        } else {
+            mostrarToast("ERROR AL RECUPERAR BOLETA");
+        }
+    }
+
+    function cerrarBoleta() { document.getElementById('modal-boleta').classList.remove('activo'); }
+
+    /* --- CARGAR INVENTARIO CON AGRUPACIÓN POR CATEGORÍA --- */
+    async function cargarInventario() {
+        const res = await fetch('/api/productos');
+        const data = await res.json();
+        const body = document.getElementById('inventario-body');
+        body.innerHTML = '';
+
+        if (!data.success || !data.productos) return;
+
+        // Agrupar productos por categoría
+        const categorias = {};
+        data.productos.forEach(p => {
+            const cat = p.categoria || 'Abarrotes';
+            if (!categorias[cat]) {
+                categorias[cat] = [];
+            }
+            categorias[cat].push(p);
+        });
+
+        // Iterar y renderizar agrupado
+        for (const [cat, prods] of Object.entries(categorias)) {
+            // Encabezado visual de Categoría
+            const filaCat = document.createElement('tr');
+            filaCat.innerHTML = `
+                <td colspan="6" style="background-color: rgba(255, 255, 255, 0.08); font-weight: bold; color: var(--accent-color, #00ffff); padding: 8px 12px; text-transform: uppercase; letter-spacing: 1px;">
+                    📂 ${cat} (${prods.length})
+                </td>
+            `;
+            body.appendChild(filaCat);
+
+            // Filas de productos pertenecientes a la categoría
+            prods.forEach(p => {
+                const stockDisplay = p.stock <= 0 ? `<span style="color:var(--danger-red); font-weight:bold;">0 (Agotado)</span>` : p.stock;
+                const nombreMarca = p.marca ? `${p.nombre}<br><small style="color:var(--text-muted)">${p.marca}</small>` : p.nombre;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><b>${p.codigo_barras || '-'}</b></td>
+                    <td>${nombreMarca}</td>
+                    <td><small>${p.categoria || 'Abarrotes'}</small></td>
+                    <td>S/ ${parseFloat(p.precio).toFixed(2)}</td>
+                    <td>${stockDisplay}</td>
+                    <td class="col-acciones">
+                        <button class="btn-small btn-edit" title="Editar" onclick="prepararEdicion(${p.id}, '${p.codigo_barras || ''}', '${p.nombre.replace(/'/g, "\\'")}', '${(p.marca||'').replace(/'/g, "\\'")}', '${p.categoria || 'Abarrotes'}', ${p.precio}, ${p.stock})">✏️</button>
+                        <button class="btn-small btn-delete" title="Eliminar" onclick="confirmarEliminarProducto(${p.id})">🗑️</button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+    }
+
+    function prepararEdicion(id, codigo, nombre, marca, categoria, precio, stock) {
+        document.getElementById('prod-id').value = id;
+        document.getElementById('prod-codigo').value = codigo;
+        document.getElementById('prod-nombre').value = nombre;
+        document.getElementById('prod-marca').value = marca;
+        document.getElementById('prod-categoria').value = categoria;
+        document.getElementById('prod-precio').value = precio;
+        document.getElementById('prod-stock').value = stock;
+        document.getElementById('form-titulo').innerText = "EDITAR PRODUCTO";
+        document.getElementById('btn-cancelar').style.display = "block";
+    }
+
+    function limpiarFormulario() {
+        document.getElementById('prod-id').value = '';
+        document.getElementById('prod-codigo').value = '';
+        document.getElementById('prod-nombre').value = '';
+        document.getElementById('prod-marca').value = '';
+        document.getElementById('prod-categoria').value = 'Abarrotes';
+        document.getElementById('prod-precio').value = '';
+        document.getElementById('prod-stock').value = '';
+        document.getElementById('form-titulo').innerText = "REGISTRAR / EDITAR PRODUCTO";
+        document.getElementById('btn-cancelar').style.display = "none";
+        cancelarTodoEscaneo();
+    }
+
+    async function guardarProducto() {
+        const valNombre = document.getElementById('prod-nombre').value.trim();
+        const valPrecio = document.getElementById('prod-precio').value.trim();
+        const valStock = document.getElementById('prod-stock').value.trim();
+
+        if(!valNombre) return mostrarToast("FALTA INGRESAR EL NOMBRE");
+        if(valPrecio === "") return mostrarToast("FALTA INGRESAR EL PRECIO");
+        if(valStock === "") return mostrarToast("FALTA INGRESAR EL STOCK");
+
+        const prod = {
+            id: document.getElementById('prod-id').value,
+            codigo_barras: document.getElementById('prod-codigo').value.trim(),
+            nombre: valNombre,
+            marca: document.getElementById('prod-marca').value.trim(),
+            categoria: document.getElementById('prod-categoria').value,
+            precio: parseFloat(valPrecio),
+            stock: parseInt(valStock)
+        };
+
+        try {
+            const res = await fetch('/api/producto/guardar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(prod)
+            });
+            const data = await res.json();
+            if(data.success) {
+                mostrarToast("PRODUCTO AÑADIDO CORRECTAMENTE");
+                limpiarFormulario();
+                cargarInventario();
+            } else {
+                mostrarToast(data.message || "ERROR AL GUARDAR");
+            }
+        } catch(e) {
+            mostrarToast("ERROR CONEXIÓN SERVIDOR");
+        }
+    }
+
+    function confirmarEliminarProducto(id) {
+        solicitarConfirmacion(
+            "ELIMINAR PRODUCTO",
+            "¿ESTÁS SEGURO DE ELIMINAR ESTE PRODUCTO DEL INVENTARIO?",
+            async function() {
+                await fetch(`/api/producto/eliminar/${id}`, { method: 'DELETE' });
+                mostrarToast("PRODUCTO ELIMINADO");
+                cargarInventario();
+            }
+        );
+    }
+
+    async function cargarHistorial() {
+        const res = await fetch('/api/ventas/historial');
+        const data = await res.json();
+        const body = document.getElementById('historial-body');
+        body.innerHTML = '';
+        data.ventas.forEach(v => {
+            const esAnulada = v.estado === 'ANULADA';
+            const claseFila = esAnulada ? 'class="venta-anulada"' : '';
+            const tagEstado = esAnulada ? '<br><small>[ANULADA]</small>' : '';
+
+            const btnAccion = esAnulada 
+                ? '<span title="Venta Anulada">🔒</span>'
+                : `<button class="btn-small btn-delete" title="Anular Venta" onclick="confirmarAnularVenta(${v.id})">🚫</button>`;
+
+            body.innerHTML += `<tr ${claseFila}>
+                <td>#${v.id}${tagEstado}</td>
+                <td>${v.fecha_hora}</td>
+                <td>${v.productos}</td>
+                <td><b>${v.total_cantidades} ítems</b></td>
+                <td>${v.metodo_pago}</td>
+                <td>S/ ${v.total.toFixed(2)}</td>
+                <td><button class="btn-small btn-print" onclick="reimprimirBoleta(${v.id})">📄 Reimprimir</button></td>
+                <td class="col-acciones">${btnAccion}</td>
+            </tr>`;
+        });
+    }
+
+    function confirmarAnularVenta(ventaId) {
+        solicitarConfirmacion(
+            "ANULAR VENTA",
+            "¿ESTÁS SEGURO DE ANULAR ESTA VENTA Y DEVOLVER EL STOCK?",
+            async function() {
+                const res = await fetch(`/api/venta/anular/${ventaId}`, { method: 'POST' });
+                const data = await res.json();
+                if(data.success) {
+                    mostrarToast("VENTA ANULADA");
+                    cargarHistorial();
+                } else {
+                    mostrarToast(data.message || "ERROR AL ANULAR");
+                }
+            }
+        );
+    }
+
+    function pedirClaveEasterEgg() {
+        document.getElementById('input-easter-pass').value = '';
+        document.getElementById('modal-easter').classList.add('activo');
+    }
+
+    function cerrarModalEaster() {
+        document.getElementById('modal-easter').classList.remove('activo');
+    }
+
+    async function validarEasterEgg() {
+        const inputPass = document.getElementById('input-easter-pass').value.trim();
+        const res = await fetch('/api/config/pass');
+        const data = await res.json();
+
+        if (inputPass === data.password) {
+            document.getElementById('historial-body').innerHTML = '';
+            cerrarModalEaster();
+            mostrarToast("HISTORIAL VISUAL LIMPIADO");
+        } else {
+            mostrarToast("CONTRASEÑA INCORRECTA");
+        }
+    }
+
+    function abrirModalSalir() { document.getElementById('modal-salir').classList.add('activo'); }
+    function cerrarModalSalir() { document.getElementById('modal-salir').classList.remove('activo'); }
+
+    async function confirmarGuardarYSalir() {
+        try {
+            await fetch('/api/salir', { method: 'POST' });
+        } catch(e) {}
+        
+        document.body.innerHTML = `
+            <div style="background:#111827; color:#ffffff; height:100vh; width:100vw; display:flex; flex-direction:column; justify-content:center; align-items:center; font-family:monospace; text-align:center;">
+                <h2 style="color:#059669; margin-bottom:10px;">💾 REPORTES GUARDADOS EN HISTORIAL_DIARIO</h2>
+                <p style="color:#9ca3af;">EL SISTEMA POS SE HA CERRADO Y APAGADO CORRECTAMENTE.</p>
+            </div>
+        `;
+        setTimeout(() => { window.close(); }, 800);
+    }
+
+    async function abrirModalConfig() { 
+        const res = await fetch('/api/config/pass');
+        const data = await res.json();
+        if(data.success) {
+            document.getElementById('cfg-password').value = data.password;
+        }
+        document.getElementById('modal-config').classList.add('activo'); 
+    }
+    
+    function cerrarModalConfig() { document.getElementById('modal-config').classList.remove('activo'); }
+
+    function confirmarGuardarConfiguracion() {
+        cerrarModalConfig();
+        solicitarConfirmacion(
+            "CAMBIAR CONFIGURACIÓN",
+            "¿ESTÁS SEGURO DE GUARDAR Y/O CAMBIAR LA CONTRASEÑA DEL SISTEMA?",
+            async function() {
+                await aplicarConfiguracion();
+            }
+        );
+    }
+
+    async function aplicarConfiguracion() {
+        const nombre = document.getElementById('cfg-nombre').value.trim();
+        const fuente = document.getElementById('cfg-fuente').value;
+        const tema = document.getElementById('cfg-tema').value;
+        const pass = document.getElementById('cfg-password').value.trim();
+
+        if(nombre) {
+            document.getElementById('app-title-display').innerText = nombre;
+            document.getElementById('app-title-head').innerText = nombre + " - Industrial Sci-Fi";
+        }
+
+        document.documentElement.style.setProperty('--app-font', fuente);
+
+        if(tema === 'dark') {
+            document.body.classList.add('dark-theme');
+        } else {
+            document.body.classList.remove('dark-theme');
+        }
+
+        if(pass) {
+            await fetch('/api/config/pass', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ password: pass })
+            });
+        }
+
+        mostrarToast("CONFIGURACIÓN Y CLAVE ACTUALIZADAS");
+    }
+
+    cargarSelectProductos();
+
+  window.addEventListener('DOMContentLoaded', () => {
+    let progress = 0;
+    const progressFill = document.getElementById('progressFill');
+    const loadingText = document.getElementById('loadingText');
+    const splashScreen = document.getElementById('splash-screen');
+
+    const interval = setInterval(() => {
+      progress += 2;
+      if (progressFill) progressFill.style.width = progress + '%';
+      if (loadingText) loadingText.textContent = `Iniciando módulos... ${progress}%`;
+
+      if (progress >= 100) {
+        clearInterval(interval);
+        if (loadingText) loadingText.textContent = '¡Sistema Listo!';
+        setTimeout(() => {
+          if (splashScreen) {
+            splashScreen.style.opacity = '0';
+            setTimeout(() => splashScreen.style.display = 'none', 500);
+          }
+        }, 300);
+      }
+    }, 80);
+  });
+</script>
+
+</body>
+</html>
